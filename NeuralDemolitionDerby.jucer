@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="pk9Axa" name="NeuralDemolitionDerby" projectType="guiapp"
+              useAppConfig="0" addUsingNamespaceToJuceHeader="0" displaySplashScreen="1"
+              jucerFormatVersion="1">
+  <MAINGROUP id="pwqInh" name="NeuralDemolitionDerby">
+    <GROUP id="{F46D8ED5-42B9-E7DE-DDE9-C138D4BEB582}" name="Header">
+      <FILE id="gi5i0O" name="NDDObjectGroup.h" compile="0" resource="0"
+            file="Source/NDDObjectGroup.h"/>
+      <FILE id="teAOir" name="NDDPhysicalObject.h" compile="0" resource="0"
+            file="Source/NDDPhysicalObject.h"/>
+      <FILE id="yWlRQV" name="NDDCar.h" compile="0" resource="0" file="Source/NDDCar.h"/>
+      <FILE id="XGQwdG" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
+    </GROUP>
+    <GROUP id="{2314EC32-F30E-C52B-F8AD-9ADBE2F5B3DE}" name="Source">
+      <FILE id="kJSlDd" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="KCvfnt" name="NDDCar.cpp" compile="1" resource="0" file="Source/NDDCar.cpp"/>
+      <FILE id="RHsYn0" name="NDDObjectGroup.cpp" compile="1" resource="0"
+            file="Source/NDDObjectGroup.cpp"/>
+      <FILE id="CZ0hov" name="NDDPhysicalObject.cpp" compile="1" resource="0"
+            file="Source/NDDPhysicalObject.cpp"/>
+      <FILE id="ONV114" name="MainComponent.cpp" compile="1" resource="0"
+            file="Source/MainComponent.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
+  <EXPORTFORMATS>
+    <VS2019 targetFolder="Builds/VisualStudio2019">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="NeuralDemolitionDerby"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="NeuralDemolitionDerby"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="C:/Users/whyno/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="C:/Users/whyno/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="C:/Users/whyno/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="C:/Users/whyno/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="C:/Users/whyno/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="C:/Users/whyno/JUCE/modules"/>
+      </MODULEPATHS>
+    </VS2019>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
+</JUCERPROJECT>
