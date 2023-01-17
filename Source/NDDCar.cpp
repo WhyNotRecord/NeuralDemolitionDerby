@@ -245,6 +245,9 @@ float NDDCar::getMaxRadius2() {
     return radius;
 }
 
+juce::Path *NDDCar::getBounds() {
+    return &body;
+}
 
 juce::String NDDCar::getId() const
 {

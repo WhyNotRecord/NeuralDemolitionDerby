@@ -58,6 +58,7 @@ public:
     void addImpulse(juce::Point<float> value);
 
     float getMaxRadius2();
+    juce::Path *getBounds();
 
     juce::String getId() const;
     void setId(juce::String id);

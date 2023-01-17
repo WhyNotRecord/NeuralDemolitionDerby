@@ -18,6 +18,8 @@ public:
     //==============================================================================
     void update() override;
     void createCar(float xPos, float yPos, int mass, float acceleration, juce::String id);
+    void validatePossibleCollision(NDDCar* c1, NDDCar* c2);
+    juce::Point<float>* getCollisionPoint(juce::Path* c1Bounds, juce::Path* c2Bounds);
 
     //==============================================================================
     void paint (juce::Graphics& g) override;

@@ -38,15 +38,16 @@ void MainComponent::update()
     // in the constructor. You can use it to update counters, animate values, etc.
     processKeysState();
     collision = "";
-    for (NDDCar *c : cars) {
-        c->update();
+    for (NDDCar *c1 : cars) {
+        c1->update();
         //process collisions
-        for (NDDCar* cc : cars) {
-            if (c == cc)
+        for (NDDCar* c2 : cars) {
+            if (c1 == c2)
                 continue;
-            float dist2 = c->getPosition().getDistanceSquaredFrom(cc->getPosition());
-            if (dist2 <= c->getMaxRadius2() + cc->getMaxRadius2())
-                collision = c->getId() + "x" + cc->getId();
+            float dist2 = c1->getPosition().getDistanceSquaredFrom(c2->getPosition());
+            if (dist2 <= c1->getMaxRadius2() + c2->getMaxRadius2()) {
+                validatePossibleCollision(c1, c2);
+            }
         }
     }
 }
@@ -60,7 +61,7 @@ void MainComponent::paint (juce::Graphics& g)
         c->paint(g);
     }
     g.setColour(juce::Colours::white);
-    g.drawText(collision, 20, 20, 50, 20, juce::Justification::centredLeft);
+    g.drawText(collision, 20, 20, 100, 20, juce::Justification::centredLeft);
     // You can add your drawing code here!
 }
 
@@ -70,6 +71,29 @@ void MainComponent::createCar(float _x, float _y, int _mass, float _acceleration
     cars.push_back(newCar);
 }
 
+void MainComponent::validatePossibleCollision(NDDCar* c1, NDDCar* c2) {
+    collision = c1->getId() + "x" + c2->getId();
+    juce::Point<float>* cp = getCollisionPoint(c1->getBounds(), c2->getBounds());
+    if (cp != NULL) {
+        collision += (" - " + cp->toString());
+    }
+}
+
+juce::Point<float>* MainComponent::getCollisionPoint(juce::Path* c1Bounds, juce::Path* c2Bounds) {
+    juce::Path::Iterator it1(*c1Bounds);
+    while (it1.next()) {
+        if (c2Bounds->contains(juce::Point<float>(it1.x1, it1.y1))) {
+            return new juce::Point<float>(it1.x1, it1.y1);
+        }
+    }
+    juce::Path::Iterator it2(*c2Bounds);
+    while (it2.next()) {
+        if (c1Bounds->contains(juce::Point<float>(it2.x1, it2.y1))) {
+            return new juce::Point<float>(it2.x1, it2.y1);
+        }
+    }
+
+}
 
 void MainComponent::resized()
 {
