@@ -4,6 +4,7 @@ using namespace juce;
 
 const float border = 20;
 const int crashPauseInFrames = 10;
+const int carsCount = 8;
 //==============================================================================
 MainComponent::MainComponent() : 
     userCar(120, 120, 100, 5.f),
@@ -15,12 +16,25 @@ MainComponent::MainComponent() :
     setFramesPerSecond (60); // This sets the frequency of the update calls.
     cars.push_back(&userCar);
     userCar.setDirection(1.f);
+    userCar.setId("Y");
 
-    createCar(200, 220, 100, 4.f, "R")->setDirection(2.5);
-    NDDCar* enemyCar = createCar(600, 300, 100, 2.5f, "0");
-    enemyCar->setDirection(4.5f);
-    enemyCar->steer(-0.5f);
-    rDriver = NDDStraightDriver(enemyCar);
+    juce::Point<float> center(getWidth() * 0.5f, getHeight() * 0.5f);
+    float radius = juce::jmin<int>(getWidth(), getHeight()) * 0.45f;
+    int prev = 1, pPrev = 0;
+    NDDCar* enemyCar = NULL;
+    for (int i = 1; i <= 8; i++) {
+        int id = prev + pPrev;
+
+        float angle = juce::MathConstants<float>::twoPi / carsCount * i;
+        juce::Point<float> pos(std::cosf(angle) * radius, std::sinf(angle) * radius);
+        enemyCar = createCar(pos.x + center.x, pos.y + center.y, 100, 4.f, juce::String(id));
+        enemyCar->setDirection(angle + juce::MathConstants<float>::pi);
+
+        pPrev = prev;
+        prev = id;
+    }
+
+    rDriver = NDDStraightDriver(enemyCar);//make last car alive
 
     setWantsKeyboardFocus(true);
 }

@@ -73,6 +73,9 @@ void NDDCar::paint(juce::Graphics& g)
     g.fillPath(body);
 
     //Health
+    g.setColour(juce::Colours::red);
+    g.drawLine(position.x - hHealthBarWidth, position.y - hHealthBarWidth,
+        position.x + hHealthBarWidth, position.y - hHealthBarWidth, 2.f);
     g.setColour(juce::Colours::green);
     g.drawLine(position.x - hHealthBarWidth, position.y - hHealthBarWidth,
         position.x - hHealthBarWidth + (health / 100.f) * healthBarWidth, position.y - hHealthBarWidth, 2.f);
