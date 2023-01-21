@@ -5,6 +5,12 @@
               jucerFormatVersion="1">
   <MAINGROUP id="pwqInh" name="NeuralDemolitionDerby">
     <GROUP id="{F46D8ED5-42B9-E7DE-DDE9-C138D4BEB582}" name="Header">
+      <FILE id="tI0mAb" name="NDDStraightDriver.h" compile="0" resource="0"
+            file="Source/NDDStraightDriver.h"/>
+      <FILE id="XmoP0a" name="NDDAbstractDriver.h" compile="0" resource="0"
+            file="Source/NDDAbstractDriver.h"/>
+      <FILE id="KCZoOx" name="NDDRandomDriver.h" compile="0" resource="0"
+            file="Source/NDDRandomDriver.h"/>
       <FILE id="gi5i0O" name="NDDObjectGroup.h" compile="0" resource="0"
             file="Source/NDDObjectGroup.h"/>
       <FILE id="teAOir" name="NDDPhysicalObject.h" compile="0" resource="0"
@@ -13,7 +19,13 @@
       <FILE id="XGQwdG" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
     </GROUP>
     <GROUP id="{2314EC32-F30E-C52B-F8AD-9ADBE2F5B3DE}" name="Source">
+      <FILE id="lpP6Ro" name="NDDStraightDriver.cpp" compile="1" resource="0"
+            file="Source/NDDStraightDriver.cpp"/>
+      <FILE id="lIpy96" name="NDDAbstractDriver.cpp" compile="1" resource="0"
+            file="Source/NDDAbstractDriver.cpp"/>
       <FILE id="kJSlDd" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="lK97i1" name="NDDRandomDriver.cpp" compile="1" resource="0"
+            file="Source/NDDRandomDriver.cpp"/>
       <FILE id="KCvfnt" name="NDDCar.cpp" compile="1" resource="0" file="Source/NDDCar.cpp"/>
       <FILE id="RHsYn0" name="NDDObjectGroup.cpp" compile="1" resource="0"
             file="Source/NDDObjectGroup.cpp"/>

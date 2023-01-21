@@ -139,7 +139,10 @@
     <Lib/>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\NDDStraightDriver.cpp"/>
+    <ClCompile Include="..\..\Source\NDDAbstractDriver.cpp"/>
     <ClCompile Include="..\..\Source\Main.cpp"/>
+    <ClCompile Include="..\..\Source\NDDRandomDriver.cpp"/>
     <ClCompile Include="..\..\Source\NDDCar.cpp"/>
     <ClCompile Include="..\..\Source\NDDObjectGroup.cpp"/>
     <ClCompile Include="..\..\Source\NDDPhysicalObject.cpp"/>
@@ -1369,6 +1372,9 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\NDDStraightDriver.h"/>
+    <ClInclude Include="..\..\Source\NDDAbstractDriver.h"/>
+    <ClInclude Include="..\..\Source\NDDRandomDriver.h"/>
     <ClInclude Include="..\..\Source\NDDObjectGroup.h"/>
     <ClInclude Include="..\..\Source\NDDPhysicalObject.h"/>
     <ClInclude Include="..\..\Source\NDDCar.h"/>

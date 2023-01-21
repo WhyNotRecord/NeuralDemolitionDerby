@@ -235,7 +235,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\NDDStraightDriver.cpp">
+      <Filter>NeuralDemolitionDerby\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\NDDAbstractDriver.cpp">
+      <Filter>NeuralDemolitionDerby\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Main.cpp">
+      <Filter>NeuralDemolitionDerby\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\NDDRandomDriver.cpp">
       <Filter>NeuralDemolitionDerby\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\NDDCar.cpp">
@@ -1575,6 +1584,15 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\NDDStraightDriver.h">
+      <Filter>NeuralDemolitionDerby\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\NDDAbstractDriver.h">
+      <Filter>NeuralDemolitionDerby\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\NDDRandomDriver.h">
+      <Filter>NeuralDemolitionDerby\Header</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\NDDObjectGroup.h">
       <Filter>NeuralDemolitionDerby\Header</Filter>
     </ClInclude>

@@ -1,10 +1,12 @@
 #include "MainComponent.h"
 
 using namespace juce;
+
+const float border = 20;
+const int crashPauseInFrames = 10;
 //==============================================================================
 MainComponent::MainComponent() : 
-    userCar(120, 120, 100, 3.f),
-    enemyCar(600, 300, 100, 3.5f),
+    userCar(120, 120, 100, 5.f),
     collision("")
 {
     // Make sure you set the size of the component after
@@ -12,21 +14,20 @@ MainComponent::MainComponent() :
     setSize (800, 600);
     setFramesPerSecond (60); // This sets the frequency of the update calls.
     cars.push_back(&userCar);
-    cars.push_back(&enemyCar);
     userCar.setDirection(1.f);
-    enemyCar.setId("0");
-    enemyCar.setDirection(4.5f);
-    enemyCar.accelerate(3);
-    enemyCar.steer(-0.5f);
 
-    createCar(500, 500, 100, 3.f, "R");
+    createCar(200, 220, 100, 4.f, "R")->setDirection(2.5);
+    NDDCar* enemyCar = createCar(600, 300, 100, 2.5f, "0");
+    enemyCar->setDirection(4.5f);
+    enemyCar->steer(-0.5f);
+    rDriver = NDDStraightDriver(enemyCar);
 
     setWantsKeyboardFocus(true);
 }
 
 MainComponent::~MainComponent()
 {
-    for (int i = 2; i < cars.size(); i++) {
+    for (int i = 1; i < cars.size(); i++) {//кроме машины игрока
         delete cars.at(i);
     }
 }
@@ -37,18 +38,45 @@ void MainComponent::update()
     // This function is called at the frequency specified by the setFramesPerSecond() call
     // in the constructor. You can use it to update counters, animate values, etc.
     processKeysState();
+    rDriver.update(getBounds());
+
+    juce::Rectangle<int> fieldBounds = getBounds().reduced(border);
     collision = "";
-    for (NDDCar *c1 : cars) {
+    for (int i = 0; i < cars.size(); i++) {
+        NDDCar* c1 = cars.at(i);
         c1->update();
+
         //process collisions
-        for (NDDCar* c2 : cars) {
-            if (c1 == c2)
-                continue;
+        for (int j = i + 1; j < cars.size(); j++) {
+            NDDCar* c2 = cars.at(j);
             float dist2 = c1->getPosition().getDistanceSquaredFrom(c2->getPosition());
             if (dist2 <= c1->getMaxRadius2() + c2->getMaxRadius2()) {
                 validatePossibleCollision(c1, c2);
             }
         }
+
+        //process field borders
+        juce::Point<float> cPos = c1->getPosition();
+        //if (!fieldBounds.contains(cPos.x, cPos.y)) {
+            if (cPos.x < fieldBounds.getX()) {
+                c1->addImpulse(Point<float>(2, 0));//todo чтоб зависело от скорости въезда
+            }
+            else if (cPos.x > fieldBounds.getRight()) {
+                c1->addImpulse(Point<float>(-2, 0));//todo чтоб зависело от скорости въезда
+            }
+            if (cPos.y < fieldBounds.getY()) {
+                c1->addImpulse(Point<float>(0, 2));//todo чтоб зависело от скорости въезда
+            }
+            else if (cPos.y > fieldBounds.getBottom()) {
+                c1->addImpulse(Point<float>(0, -2));//todo чтоб зависело от скорости въезда
+            }
+        //}
+    }
+    for (const auto& n : actCollisions) {
+        if (n.second > 0)
+            actCollisions[n.first]--;
+        /*else
+            actCollisions.erase(n.first);*/
     }
 }
 
@@ -62,33 +90,91 @@ void MainComponent::paint (juce::Graphics& g)
     }
     g.setColour(juce::Colours::white);
     g.drawText(collision, 20, 20, 100, 20, juce::Justification::centredLeft);
-    // You can add your drawing code here!
 }
 
-void MainComponent::createCar(float _x, float _y, int _mass, float _acceleration, juce::String id) {
+NDDCar* MainComponent::createCar(float _x, float _y, int _mass, float _acceleration, juce::String id) {
     NDDCar *newCar = new NDDCar(_x, _y, _mass, _acceleration);
     newCar->setId(id);
     cars.push_back(newCar);
+    return newCar;
 }
 
 void MainComponent::validatePossibleCollision(NDDCar* c1, NDDCar* c2) {
     collision = c1->getId() + "x" + c2->getId();
-    juce::Point<float>* cp = getCollisionPoint(c1->getBounds(), c2->getBounds());
+    juce::Point<float> imp1 = c1->getImpulse();
+    juce::Point<float> imp2 = c2->getImpulse();
+    juce::Point<float>* cp = getCollisionPoint(c1->getBounds(), imp1, c2->getBounds(), imp2);
     if (cp != NULL) {
-        collision += (" - " + cp->toString());
+        if (actCollisions[collision] == NULL) {
+            actCollisions[collision] = crashPauseInFrames;
+            collision += (" - " + cp->toString());
+            processCollision(c1, c2, imp1, imp2, cp);
+        }
+        delete cp;
     }
 }
 
-juce::Point<float>* MainComponent::getCollisionPoint(juce::Path* c1Bounds, juce::Path* c2Bounds) {
+void MainComponent::processCollision(NDDCar* fCar, NDDCar* sCar,
+    juce::Point<float> fCarImp, juce::Point<float> sCarImp, juce::Point<float>* cp) {
+    if (fCarImp.isOrigin() && sCarImp.isOrigin()) {//for cars not to stuck
+        fCarImp = (*cp - fCar->getPosition()) / 2;
+        sCarImp = (*cp - sCar->getPosition()) / 2;
+    }
+    juce::Point<float> imp = fCarImp + sCarImp;
+    //float colPower = imp.getDistanceFromOrigin();
+    float fCarImpPower = fCarImp.getDistanceFromOrigin();
+    float sCarImpPower = sCarImp.getDistanceFromOrigin();
+    float colPower = fCarImpPower + sCarImpPower;
+
+    //fCar->brake(fCarImpPower > 1 ? fCarImpPower : colPower);
+    //sCar->brake(sCarImpPower > 1 ? sCarImpPower : colPower);
+    fCar->brake(colPower);
+    sCar->brake(colPower);
+
+
+    float help = (sCarImpPower - fCarImpPower) /** (colPower / 2)*/;
+    fCar->setImpulse((fCarImpPower < 0.5f ? imp : imp / fCarImpPower) * help);
+    sCar->setImpulse((sCarImpPower < 0.5f ? imp : imp / sCarImpPower) * -help);
+
+    fCar->setStunned(crashPauseInFrames);
+    sCar->setStunned(crashPauseInFrames);
+
+    juce::Point<float> center = (fCar->getPosition() + sCar->getPosition()) / 2;
+
+    juce::Point<float> fp = *cp - fCar->getPosition();
+    fp.applyTransform(juce::AffineTransform::rotation(-fCar->getDirection()));
+    float fcAng = fp.y * fp.x / (fCar->getWidth() * fCar->getLength());//fp.getDistanceFromOrigin();
+
+    juce::Point<float> sp = *cp - sCar->getPosition();
+    sp.applyTransform(juce::AffineTransform::rotation(-sCar->getDirection()));
+    float scAng = sp.y * sp.x / (sCar->getWidth() * sCar->getLength());//sp.getDistanceFromOrigin();
+
+    //fcAng и scAng зависят от точки применения силы как по знаку, так и по величине
+    //float fcRotPow = fp.getDistanceFromOrigin() / fCar->getMaxRadius2();
+    //float scRotPow = sp.getDistanceFromOrigin() / sCar->getMaxRadius2();
+
+    float fcRotation = 0.2f * fcAng * /*fcRotPow */ colPower / (fCarImpPower + 1);
+    float scRotation = 0.2f * -scAng * /*scRotPow */ colPower / (sCarImpPower + 1);
+    //todo неверное направление вращения при ударе спереди/сзади
+    juce::Logger::writeToLog(juce::String(fcRotation) + " " + juce::String(scRotation));
+    fCar->startRotation(fcRotation);
+    sCar->startRotation(scRotation);
+
+    sCar->decrementHealth(fCarImpPower);
+    fCar->decrementHealth(sCarImpPower);
+}
+
+juce::Point<float>* MainComponent::getCollisionPoint(juce::Path* c1Bounds, juce::Point<float> imp1,
+    juce::Path* c2Bounds, juce::Point<float> imp2) {
     juce::Path::Iterator it1(*c1Bounds);
     while (it1.next()) {
-        if (c2Bounds->contains(juce::Point<float>(it1.x1, it1.y1))) {
+        if (c2Bounds->contains(juce::Point<float>(it1.x1, it1.y1) + imp1)) {
             return new juce::Point<float>(it1.x1, it1.y1);
         }
     }
     juce::Path::Iterator it2(*c2Bounds);
     while (it2.next()) {
-        if (c1Bounds->contains(juce::Point<float>(it2.x1, it2.y1))) {
+        if (c1Bounds->contains(juce::Point<float>(it2.x1, it2.y1) + imp2)) {
             return new juce::Point<float>(it2.x1, it2.y1);
         }
     }

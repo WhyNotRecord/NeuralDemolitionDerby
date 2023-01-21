@@ -12,26 +12,32 @@
 #include <math.h>
 
 const float minAcceleration = 0.1f;
-const float maxDeceleration = -1.0f;
+const float maxDeceleration = -1.5f;
 const float maxSteering = 0.05f;
 const float naturalDeceleration = 0.97f;
 const float naturalSteeringLoss = 0.95f;
+const float rotationDeceleration = 0.98f;
 const float gasStopValue = 0.0099f;//must be less than sqrt(minAcceleration)
 const float steerStopValue = 0.0001f;
 const float reverseSteeringFactor = 2;
 const float minExtImpulseAffect = 0.05f;
 
 
-const int width = 15;
-const int length = 30;
-const int hWidth = width / 2;
-const int hLength = length / 2;
+const int fWidth = 19;
+const int fLength = 40;
+const int hWidth = fWidth / 2;
+const int hLength = fLength / 2;
+const int wheelSize = fLength / 6;
+const int hWheelSize = wheelSize / 2;
+const int healthBarWidth = fWidth * 1.5f;
+const int hHealthBarWidth = healthBarWidth / 2;
 
-juce::Rectangle<int> bodyBox(-hLength, -hWidth, length, width);
+juce::Rectangle<int> bodyBox(-hLength, -hWidth, fLength, fWidth);
 
 NDDCar::NDDCar(float _x, float _y, int _mass, float _acceleration) :
-    NDDPhysicalObject(_x, _y), health(100), gas(0), steering(0), direction(0), mass(_mass), maxAcceleration(_acceleration), id("1"),
-    moved(true), extImpulse(0, 0)
+    NDDPhysicalObject(_x, _y), health(100), gas(0), steering(0), direction(0), rotation(0), 
+    mass(_mass), maxAcceleration(_acceleration), id("1"),
+    moved(true), extImpulse(0, 0), stunned(0)
 {
 
 }
@@ -45,27 +51,33 @@ void NDDCar::paint(juce::Graphics& g)
        drawing code..
     */
 
-    //g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));   // clear the background
-
+    //Wheels
     g.setColour(juce::Colours::black);
-    juce::Line<float> lWheel(3, 0, - 3, 0);//по X сдвигаем на hLength - 7, по Y - на -hWidth
-    lWheel.applyTransform(juce::AffineTransform::rotation(steering * 5));
-    lWheel.applyTransform(juce::AffineTransform::translation(juce::Point<float>(hLength - 7, - hWidth)));
+    juce::Line<float> lWheel(hWheelSize, 0, -hWheelSize, 0);
+    lWheel.applyTransform(juce::AffineTransform::rotation(steering * 7));
+    //по X сдвигаем на hLength - 7, по Y - на -hWidth
+    lWheel.applyTransform(juce::AffineTransform::translation(juce::Point<float>(hLength - wheelSize * 1.7, - hWidth)));
     lWheel.applyTransform(juce::AffineTransform::rotation(direction));
     lWheel.applyTransform(juce::AffineTransform::translation(position));
     g.drawLine(lWheel);
-    juce::Line<float> rWheel(3, 0, - 3, 0);//по X сдвигаем на hLength - 7, по Y - на hWidth + 1
-    rWheel.applyTransform(juce::AffineTransform::rotation(steering * 5));
-    rWheel.applyTransform(juce::AffineTransform::translation(juce::Point<float>(hLength - 7, hWidth + 1)));
+    juce::Line<float> rWheel(hWheelSize, 0, -hWheelSize, 0);
+    rWheel.applyTransform(juce::AffineTransform::rotation(steering * 7));
+    //по X сдвигаем на hLength - 7, по Y - на hWidth + 1
+    rWheel.applyTransform(juce::AffineTransform::translation(juce::Point<float>(hLength - wheelSize * 1.7, hWidth + 0.5f)));
     rWheel.applyTransform(juce::AffineTransform::rotation(direction));
     rWheel.applyTransform(juce::AffineTransform::translation(position));
-    g.drawLine(rWheel);
+    g.drawLine(rWheel, 2);
 
+    //Body
     g.setColour(juce::Colours::grey);
     g.fillPath(body);
 
-    //g.drawRect(getLocalBounds(), 1);   // draw an outline around the component
-
+    //Health
+    g.setColour(juce::Colours::green);
+    g.drawLine(position.x - hHealthBarWidth, position.y - hHealthBarWidth,
+        position.x - hHealthBarWidth + (health / 100.f) * healthBarWidth, position.y - hHealthBarWidth, 2.f);
+    
+    //ID
     g.setColour(juce::Colours::white);
     g.setFont(10.0f);
     g.drawText(id, body.getBounds(), juce::Justification::centred, true);   // draw some placeholder text
@@ -98,6 +110,14 @@ void NDDCar::update() {
             gas *= naturalDeceleration;
         moved = true;
     }
+    if (rotation != 0) {
+        rotate(rotation);
+        if (rotation * rotation < gasStopValue)
+            rotation = 0;
+        else
+            rotation *= rotationDeceleration;
+        moved = true;
+    }
     if (!extImpulse.isOrigin()) {
         position += extImpulse;
         if (fabsf(extImpulse.x) + fabsf(extImpulse.y) < gasStopValue)
@@ -105,12 +125,14 @@ void NDDCar::update() {
         else {
             float cos2 = powf(cosf(direction) * extImpulse.x + sinf(direction) * extImpulse.y, 2);
             cos2 /= (powf(extImpulse.x, 2) + powf(extImpulse.y, 2));
-            juce::Logger::writeToLog(juce::String(cos2));
-            float factor = 0.45f * (sqrtf(cos2) + 1);//немного "размываем" действие косинуса угла
+            //juce::Logger::writeToLog(juce::String(cos2));
+            float factor = 0.3f * (sqrtf(cos2) + 2);//"размываем" действие косинуса угла
             extImpulse *= (factor);
         }
         moved = true;
     }
+    if (stunned > 0)
+        stunned--;
 }
 
 void NDDCar::setPosition(float _x, float _y) {
@@ -130,6 +152,8 @@ void NDDCar::setGas(float gas)
 
 void NDDCar::accelerate(float value)//TODO can make acceleration step NDDCar member
 {
+    if (stunned > 0)
+        return;
     if (value < minAcceleration)
         value = minAcceleration;
     this->gas += value;
@@ -139,6 +163,8 @@ void NDDCar::accelerate(float value)//TODO can make acceleration step NDDCar mem
 
 void NDDCar::decelerate(float value)
 {
+    if (stunned > 0)
+        return;
     if (value < minAcceleration)
         value = minAcceleration;
     this->gas -= value;
@@ -146,7 +172,16 @@ void NDDCar::decelerate(float value)
         this->gas = maxDeceleration;
 }
 
+void NDDCar::stop() {
+    this->gas = 0;
+}
 
+void NDDCar::brake(float value) {
+    if (value > 1)
+        this->gas /= value;
+    else
+        this->gas *= value;
+}
 
 float NDDCar::getDirection() const
 {
@@ -173,6 +208,9 @@ void NDDCar::steer(float value) {
     }
 }
 
+void NDDCar::startRotation(float value) {
+    rotation = value;
+}
 
 int NDDCar::getHealth() const
 {
@@ -222,7 +260,11 @@ juce::Point<float> NDDCar::getImpulse() {
 }
 
 void NDDCar::addImpulse(juce::Point<float> value) {
-    extImpulse += value;
+    setImpulse(extImpulse + value);
+}
+
+void NDDCar::setImpulse(juce::Point<float> value) {
+    extImpulse = value;
 
     float steeredDirection = direction - steering;
     float leftPart = cosf(steeredDirection) * extImpulse.x,
@@ -235,18 +277,23 @@ void NDDCar::addImpulse(juce::Point<float> value) {
         else
             decelerate(cos2 / 10.f);
     }
-
 }
+
 
 float NDDCar::getMaxRadius2() {
     if (radius == 0) {
-        radius = powf(width, 2) + powf(length, 2);
+        radius = powf(fWidth, 2) + powf(fLength, 2);
     }
     return radius;
 }
 
 juce::Path *NDDCar::getBounds() {
     return &body;
+}
+
+void NDDCar::setStunned(uint16_t value)
+{
+    this->stunned = value;
 }
 
 juce::String NDDCar::getId() const
@@ -259,3 +306,10 @@ void NDDCar::setId(juce::String id)
     this->id = id;
 }
 
+int NDDCar::getWidth() {
+    return fWidth;
+}
+
+int NDDCar::getLength() {
+    return fLength;
+}

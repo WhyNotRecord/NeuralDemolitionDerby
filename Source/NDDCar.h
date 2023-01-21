@@ -27,22 +27,27 @@ private:
     float gas;
     float direction;
     float steering;
+    float rotation;
     int health;
     int mass;
     float maxAcceleration;
     juce::Point<float> extImpulse;
     float radius = 0;
+    uint16_t stunned;
     juce::String id;
 public:
     /*float getGas() const;
     void setGas(float gas);*/
     void accelerate(float value);
     void decelerate(float value);
+    void brake(float value);
+    void stop();
 
     float getDirection() const;
     void setDirection(float direction);
-    void rotate(float value);//TODO change to increase rotation like gas
+    void rotate(float value);
     void steer(float value);
+    void startRotation(float value);
 
     int getHealth() const;
     void setHealth(int health);
@@ -56,11 +61,15 @@ public:
 
     juce::Point<float> getImpulse();
     void addImpulse(juce::Point<float> value);
+    void setImpulse(juce::Point<float> value);
 
     float getMaxRadius2();
     juce::Path *getBounds();
+    void setStunned(uint16_t value);
 
     juce::String getId() const;
     void setId(juce::String id);
 
+    int getWidth();
+    int getLength();
 };

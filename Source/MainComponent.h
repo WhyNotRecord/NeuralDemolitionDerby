@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 #include "NDDCar.h"
+#include "NDDStraightDriver.h"
 
 //==============================================================================
 /*
@@ -17,9 +18,12 @@ public:
 
     //==============================================================================
     void update() override;
-    void createCar(float xPos, float yPos, int mass, float acceleration, juce::String id);
+    NDDCar *createCar(float xPos, float yPos, int mass, float acceleration, juce::String id);
     void validatePossibleCollision(NDDCar* c1, NDDCar* c2);
-    juce::Point<float>* getCollisionPoint(juce::Path* c1Bounds, juce::Path* c2Bounds);
+    void processCollision(NDDCar* fastCar, NDDCar* slowCar,
+        juce::Point<float> fastCarImp, juce::Point<float> slowCarImp, juce::Point<float>* cp);
+    juce::Point<float>* getCollisionPoint(juce::Path* c1Bounds, juce::Point<float> imp1, 
+        juce::Path* c2Bounds, juce::Point<float> imp2);
 
     //==============================================================================
     void paint (juce::Graphics& g) override;
@@ -31,9 +35,11 @@ public:
 private:
     //==============================================================================
     // Your private member variables go here...
-    NDDCar userCar, enemyCar;
+    NDDCar userCar;
     std::vector<NDDCar*> cars;
+    std::map<juce::String, int> actCollisions;
     juce::String collision;
+    NDDStraightDriver rDriver = NULL;
     //int keysPressed;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
